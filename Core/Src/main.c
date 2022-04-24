@@ -32,6 +32,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define SAVING_DATA_ADRESS 0x800FC00U
+#define SAVING_DATA_PERIOD 1800000
+#define MEASUREMENT_SMALL_PERIOD 14999
+#define MEASUREMENT_NORMAL_PERIOD 59999
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -89,14 +93,14 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint32_t measurement_delay = 60000;
+  uint32_t measurement_period = MEASUREMENT_NORMAL_PERIOD;
   uint32_t measurement_start_time = Sys_Time_Get_Time();
   uint32_t saving_start_time = Sys_Time_Get_Time();
   float saving_data[3];
   FLASH_EraseInitTypeDef erase_struct =
   {
     .TypeErase = FLASH_TYPEERASE_PAGES,
-    .PageAddress = 0x800FC00,
+    .PageAddress = SAVING_DATA_ADRESS,
     .NbPages = 1
   };
   uint32_t page_error;
@@ -106,27 +110,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if(Sys_Time_Its_Time(measurement_start_time, measurement_delay))
+    if(Sys_Time_Its_Time(measurement_start_time, measurement_period))
     {
       Measure_Temperature();
       if(Get_Current_Temperature() < 10.0F)
       {
-        measurement_delay = 15000;
+        measurement_period = MEASUREMENT_SMALL_PERIOD;
       }
       else if(Get_Current_Temperature() > 15.0F)
       {
-        measurement_delay = 60000;
+        measurement_period = MEASUREMENT_NORMAL_PERIOD;
       }
       measurement_start_time = Sys_Time_Get_Time();
     }
-    if(Sys_Time_Its_Time(saving_start_time, 1800000))
+    if(Sys_Time_Its_Time(saving_start_time, SAVING_DATA_PERIOD))
     {
       Get_Max_Middle_Min_Temperature(&saving_data[0], &saving_data[1], &saving_data[2]);
       HAL_FLASH_Unlock();
       HAL_FLASHEx_Erase(&erase_struct, &page_error);
-      for(uint8_t i = 0; i < 0; i++)
+      for(uint8_t i = 0; i < 3; i++)
       {
-        HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (0x800FC00 + (sizeof(float) * i)), saving_data[i]);
+        HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (SAVING_DATA_ADRESS + (sizeof(float) * i)), saving_data[i]);
       }
       HAL_FLASH_Lock();
       saving_start_time = Sys_Time_Get_Time();
