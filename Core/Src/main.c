@@ -21,6 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
+#include <string.h>
 #include "temperature.h"
 #include "systime.h"
 /* USER CODE END Includes */
@@ -36,6 +38,7 @@
 #define SAVING_DATA_PERIOD 1800000
 #define MEASUREMENT_SMALL_PERIOD 14999
 #define MEASUREMENT_NORMAL_PERIOD 59999
+#define UART_MESSAGE_BUFFER_SIZE 40
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -96,6 +99,7 @@ int main(void)
   uint32_t measurement_period = MEASUREMENT_NORMAL_PERIOD;
   uint32_t measurement_start_time = Sys_Time_Get_Time();
   uint32_t saving_start_time = Sys_Time_Get_Time();
+  char uart_message[UART_MESSAGE_BUFFER_SIZE];
   float saving_data[3];
   FLASH_EraseInitTypeDef erase_struct =
   {
@@ -121,6 +125,8 @@ int main(void)
       {
         measurement_period = MEASUREMENT_NORMAL_PERIOD;
       }
+      sprintf(uart_message, "Current temperature: %.1f\r\n", Get_Current_Temperature());
+      HAL_UART_Transmit(&huart1, (uint8_t*)uart_message, (strlen(uart_message) * sizeof(char)), 1000);
       measurement_start_time = Sys_Time_Get_Time();
     }
     if(Sys_Time_Its_Time(saving_start_time, SAVING_DATA_PERIOD))
