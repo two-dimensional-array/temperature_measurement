@@ -59,6 +59,7 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 __STATIC_FORCEINLINE void Print_Temperature(float temperature);
+__STATIC_FORCEINLINE void Rewrite_Temperature_Data(float* p_saving_data);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -100,13 +101,6 @@ int main(void)
   uint32_t measurement_start_time = Sys_Time_Get_Time() - MEASUREMENT_NORMAL_PERIOD;
   uint32_t saving_start_time = Sys_Time_Get_Time() - SAVING_DATA_PERIOD;
   float saving_data[3];
-  FLASH_EraseInitTypeDef erase_struct =
-  {
-    .TypeErase = FLASH_TYPEERASE_PAGES,
-    .PageAddress = SAVING_DATA_ADRESS,
-    .NbPages = 1
-  };
-  uint32_t page_error;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -130,13 +124,7 @@ int main(void)
     if(Sys_Time_Its_Time(saving_start_time, SAVING_DATA_PERIOD))
     {
       Get_Max_Middle_Min_Temperature(&saving_data[0], &saving_data[1], &saving_data[2]);
-      HAL_FLASH_Unlock();
-      HAL_FLASHEx_Erase(&erase_struct, &page_error);
-      for(uint8_t i = 0; i < 3; i++)
-      {
-        HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (SAVING_DATA_ADRESS + (sizeof(float) * i)), saving_data[i]);
-      }
-      HAL_FLASH_Lock();
+      Rewrite_Temperature_Data(saving_data);
       saving_start_time = Sys_Time_Get_Time();
     }
     /* USER CODE END WHILE */
@@ -245,6 +233,24 @@ __STATIC_FORCEINLINE void Print_Temperature(float temperature)
   char uart_message[UART_MESSAGE_BUFFER_SIZE];
   sprintf(uart_message, "Current temperature: %.1f\r\n", temperature);
   HAL_UART_Transmit(&huart1, (uint8_t*)uart_message, (strlen(uart_message) * sizeof(char)), 1000);
+}
+
+__STATIC_FORCEINLINE void Rewrite_Temperature_Data(float* p_saving_data)
+{
+  static FLASH_EraseInitTypeDef erase_struct =
+  {
+    .TypeErase = FLASH_TYPEERASE_PAGES,
+    .PageAddress = SAVING_DATA_ADRESS,
+    .NbPages = 1
+  };
+  uint32_t page_error;
+  HAL_FLASH_Unlock();
+  HAL_FLASHEx_Erase(&erase_struct, &page_error);
+  for(uint8_t i = 0; i < 3; i++)
+  {
+    HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (SAVING_DATA_ADRESS + (sizeof(float) * i)), p_saving_data[i]);
+  }
+  HAL_FLASH_Lock();
 }
 /* USER CODE END 4 */
 
