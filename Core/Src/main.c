@@ -58,7 +58,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+__STATIC_FORCEINLINE void Print_Temperature(float temperature);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -99,7 +99,6 @@ int main(void)
   uint32_t measurement_period = MEASUREMENT_NORMAL_PERIOD;
   uint32_t measurement_start_time = Sys_Time_Get_Time() - MEASUREMENT_NORMAL_PERIOD;
   uint32_t saving_start_time = Sys_Time_Get_Time() - SAVING_DATA_PERIOD;
-  char uart_message[UART_MESSAGE_BUFFER_SIZE];
   float saving_data[3];
   FLASH_EraseInitTypeDef erase_struct =
   {
@@ -125,8 +124,7 @@ int main(void)
       {
         measurement_period = MEASUREMENT_NORMAL_PERIOD;
       }
-      sprintf(uart_message, "Current temperature: %.1f\r\n", Get_Current_Temperature());
-      HAL_UART_Transmit(&huart1, (uint8_t*)uart_message, (strlen(uart_message) * sizeof(char)), 1000);
+      Print_Temperature(Get_Current_Temperature());
       measurement_start_time = Sys_Time_Get_Time();
     }
     if(Sys_Time_Its_Time(saving_start_time, SAVING_DATA_PERIOD))
@@ -242,7 +240,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+__STATIC_FORCEINLINE void Print_Temperature(float temperature)
+{
+  char uart_message[UART_MESSAGE_BUFFER_SIZE];
+  sprintf(uart_message, "Current temperature: %.1f\r\n", temperature);
+  HAL_UART_Transmit(&huart1, (uint8_t*)uart_message, (strlen(uart_message) * sizeof(char)), 1000);
+}
 /* USER CODE END 4 */
 
 /**
