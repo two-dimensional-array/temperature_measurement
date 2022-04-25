@@ -97,8 +97,8 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   uint32_t measurement_period = MEASUREMENT_NORMAL_PERIOD;
-  uint32_t measurement_start_time = Sys_Time_Get_Time();
-  uint32_t saving_start_time = Sys_Time_Get_Time();
+  uint32_t measurement_start_time = Sys_Time_Get_Time() - MEASUREMENT_NORMAL_PERIOD;
+  uint32_t saving_start_time = Sys_Time_Get_Time() - SAVING_DATA_PERIOD;
   char uart_message[UART_MESSAGE_BUFFER_SIZE];
   float saving_data[3];
   FLASH_EraseInitTypeDef erase_struct =
