@@ -34,11 +34,11 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SAVING_DATA_ADRESS 0x800FC00U
-#define SAVING_DATA_PERIOD 1800000
-#define MEASUREMENT_SMALL_PERIOD 14999
-#define MEASUREMENT_NORMAL_PERIOD 59999
-#define UART_MESSAGE_BUFFER_SIZE 40
+#define SAVING_DATA_ADDRESS 0x800FC00U   // Start address for saving maximum, middle and minimum temperature values.
+#define SAVING_DATA_PERIOD 1799999       // Period for saving temperature values to the persistence storage (Internal Flash). It`s 30 minutes in microseconds.
+#define MEASUREMENT_SMALL_PERIOD 14999   // Period for temperature measurement, if current temperature below 10°C. It`s 15 seconds in microseconds.
+#define MEASUREMENT_NORMAL_PERIOD 59999  // Period for temperature measurement, if current temperature above 15°C. It`s 1 minute in microseconds.
+#define UART_MESSAGE_BUFFER_SIZE 40      // Size of char buffer for message, which is printed via UART.
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -97,9 +97,9 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint32_t measurement_period = MEASUREMENT_NORMAL_PERIOD;
-  uint32_t measurement_start_time = Sys_Time_Get_Time() - MEASUREMENT_NORMAL_PERIOD;
-  uint32_t saving_start_time = Sys_Time_Get_Time() - SAVING_DATA_PERIOD;
+  uint32_t measurement_period = MEASUREMENT_NORMAL_PERIOD;                            // Current period of measurement temperature.
+  uint32_t measurement_start_time = Sys_Time_Get_Time() - MEASUREMENT_NORMAL_PERIOD;  // Start time for counting duty cycle of measurement temperature.
+  uint32_t saving_start_time = Sys_Time_Get_Time() - SAVING_DATA_PERIOD;              // Start time for counting duty cycle of saving temperature values into flash.
   float saving_data[3];
   /* USER CODE END 2 */
 
@@ -240,7 +240,7 @@ __STATIC_FORCEINLINE void Rewrite_Temperature_Data(float* p_saving_data)
   static FLASH_EraseInitTypeDef erase_struct =
   {
     .TypeErase = FLASH_TYPEERASE_PAGES,
-    .PageAddress = SAVING_DATA_ADRESS,
+    .PageAddress = SAVING_DATA_ADDRESS,
     .NbPages = 1
   };
   uint32_t page_error;
@@ -248,7 +248,7 @@ __STATIC_FORCEINLINE void Rewrite_Temperature_Data(float* p_saving_data)
   HAL_FLASHEx_Erase(&erase_struct, &page_error);
   for(uint8_t i = 0; i < 3; i++)
   {
-    HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (SAVING_DATA_ADRESS + (sizeof(float) * i)), p_saving_data[i]);
+    HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, (SAVING_DATA_ADDRESS + (sizeof(float) * i)), p_saving_data[i]);
   }
   HAL_FLASH_Lock();
 }
