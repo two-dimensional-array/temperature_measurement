@@ -100,6 +100,7 @@ int main(void)
   uint32_t measurement_period = MEASUREMENT_NORMAL_PERIOD;                            // Current period of measurement temperature.
   uint32_t measurement_start_time = Sys_Time_Get_Time() - MEASUREMENT_NORMAL_PERIOD;  // Start time for counting duty cycle of measurement temperature.
   uint32_t saving_start_time = Sys_Time_Get_Time() - SAVING_DATA_PERIOD;              // Start time for counting duty cycle of saving temperature values into flash.
+  float current_temperature;                                                          // Current temperature value.
   float saving_data[3];
   /* USER CODE END 2 */
 
@@ -110,15 +111,16 @@ int main(void)
     if(Sys_Time_Its_Time(measurement_start_time, measurement_period))
     {
       Measure_Temperature();
-      if(Get_Current_Temperature() < 10.0F)
+      current_temperature = Get_Current_Temperature();
+      if(current_temperature < 10.0F)
       {
         measurement_period = MEASUREMENT_SMALL_PERIOD;
       }
-      else if(Get_Current_Temperature() > 15.0F)
+      else if(current_temperature > 15.0F)
       {
         measurement_period = MEASUREMENT_NORMAL_PERIOD;
       }
-      Print_Temperature(Get_Current_Temperature());
+      Print_Temperature(current_temperature);
       measurement_start_time = Sys_Time_Get_Time();
     }
     if(Sys_Time_Its_Time(saving_start_time, SAVING_DATA_PERIOD))
