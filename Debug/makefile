@@ -75,8 +75,8 @@ all: main-build
 main-build: temperature_measurement.elf secondary-outputs
 
 # Tool invocations
-temperature_measurement.elf temperature_measurement.map: $(OBJS) $(USER_OBJS) D:\sim_test\temperature_measurement\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "temperature_measurement.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"D:\sim_test\temperature_measurement\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="temperature_measurement.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+temperature_measurement.elf temperature_measurement.map: $(OBJS) $(USER_OBJS) C:\work\temperature_measurement\STM32F103C8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-g++ -o "temperature_measurement.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"C:\work\temperature_measurement\STM32F103C8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="temperature_measurement.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
